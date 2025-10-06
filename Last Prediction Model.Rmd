@@ -27,6 +27,7 @@ knitr::opts_chunk$set(
   fig.height = 5,
   cache = FALSE
 )
+options(repos = c(CRAN = "https://cloud.r-project.org/"))
 
 # Load required packages with error handling
 required_packages <- c("ggplot2", "dplyr", "gridExtra", "caret", "Metrics", 

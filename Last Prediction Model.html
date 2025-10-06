@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Syed Toushik Hossain" />
+
+<meta name="date" content="2025-10-06" />
+
+<title>🎬 Prediction Model of the Relationship Between IMDB Rating &amp; Movie Popularity</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  background-color: #f8f8f8; }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ef2929; } /* Alert */
+code span.an { color: #8f5902; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #204a87; } /* Attribute */
+code span.bn { color: #0000cf; } /* BaseN */
+code span.cf { color: #204a87; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4e9a06; } /* Char */
+code span.cn { color: #8f5902; } /* Constant */
+code span.co { color: #8f5902; font-style: italic; } /* Comment */
+code span.cv { color: #8f5902; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #8f5902; font-weight: bold; font-style: italic; } /* Documentation */
+code span.dt { color: #204a87; } /* DataType */
+code span.dv { color: #0000cf; } /* DecVal */
+code span.er { color: #a40000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #0000cf; } /* Float */
+code span.fu { color: #204a87; font-weight: bold; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #8f5902; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #204a87; font-weight: bold; } /* Keyword */
+code span.op { color: #ce5c00; font-weight: bold; } /* Operator */
+code span.ot { color: #8f5902; } /* Other */
+code span.pp { color: #8f5902; font-style: italic; } /* Preprocessor */
+code span.sc { color: #ce5c00; font-weight: bold; } /* SpecialChar */
+code span.ss { color: #4e9a06; } /* SpecialString */
+code span.st { color: #4e9a06; } /* String */
+code span.va { color: #000000; } /* Variable */
+code span.vs { color: #4e9a06; } /* VerbatimString */
+code span.wa { color: #8f5902; font-weight: bold; font-style: italic; } /* Warning */
+
+.sourceCode .row {
+  width: 100%;
+}
+.sourceCode {
+  overflow-x: auto;
+}
+.code-folding-btn {
+  margin-right: -30px;
+}
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+
+
+
+<style type="text/css">
+
+#section-TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#section-TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+.tocify-subheader {
+  display: inline;
+}
+.tocify-subheader .tocify-item {
+  font-size: 0.95em;
+}
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="section-TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="section-header">
+
+<div class="btn-group pull-right float-right">
+<button type="button" class="btn btn-default btn-xs btn-secondary btn-sm dropdown-toggle" data-toggle="dropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu dropdown-menu-right" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">🎬 Prediction Model of the Relationship
+Between IMDB Rating &amp; Movie Popularity</h1>
+<h4 class="author">Syed Toushik Hossain</h4>
+<h4 class="date">October 06, 2025</h4>
+
+</div>
+
+
+<style type="text/css">
+/* Custom CSS for professional styling */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.title {
+  text-align: center;
+  color: #2874A6;
+  padding: 20px 0;
+  border-bottom: 3px solid #2874A6;
+}
+
+h1, h2, h3 {
+  color: #2874A6;
+}
+
+.author, .date {
+  text-align: center;
+  font-size: 16px;
+  color: #5D6D7E;
+}
+</style>
+<div
+style="background: linear-gradient(135deg, #F9FAFB 0%, #EBF5FB 100%); padding: 35px 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; border-left: 8px solid #2874A6;">
+<div style="text-align: center; margin-bottom: 25px;">
+<h2 style="color: #2874A6; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.5px;">
+Statistical Analysis Report
+</h2>
+<div
+style="width: 80px; height: 3px; background: linear-gradient(to right, #2874A6, #AED6F1); margin: 12px auto;">
+
+</div>
+<p style="color: #5D6D7E; font-size: 16px; font-style: italic; margin: 8px 0;">
+Predictive Modeling of IMDB Ratings and Movie Popularity
+</p>
+</div>
+<hr style="border: 0; border-top: 2px solid #D5DBDB; margin: 25px 0; opacity: 0.5;">
+<div
+style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-size: 15px; color: #424949; line-height: 1.8;">
+<div
+style="background: white; padding: 18px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<div
+style="font-weight: 600; color: #2874A6; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+<p>📚 Academic Information</p>
+</div>
+<div>
+<b>Course:</b> Statistics I (HE 103)
+</div>
+<div>
+<b>Session:</b> 1st Year, 1st Semester (2024–2025)
+</div>
+<div>
+<b>Instructor:</b> Ashraful K. Abir
+</div>
+</div>
+<div
+style="background: white; padding: 18px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<div
+style="font-weight: 600; color: #2874A6; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+<p>👤 Student &amp; Institution</p>
+</div>
+<div>
+<b>Name:</b> Syed Toushik Hossain
+</div>
+<div>
+<b>Institute:</b> Institute of Health Economics, University of Dhaka
+</div>
+</div>
+</div>
+<div
+style="background: #FEF9E7; padding: 12px 18px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #F39C12;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span style="font-size: 20px;">📊</span>
+<div style="font-size: 14px; color: #7D6608; line-height: 1.6;">
+<p><b>Report Type:</b> Quantitative Statistical Analysis |
+<b>Methodology:</b> Linear Regression Modeling | <b>Dataset:</b> IMDB
+Top 1000 Movies</p>
+</div>
+</div>
+</div>
+</div>
+<div
+style="background: #E8F6F3; padding: 12px 20px; border-radius: 8px; border-left: 4px solid #2874A6; margin-bottom: 25px;">
+<div style="font-size: 14px; color: #1E4D2B; line-height: 1.6;">
+<p><b style="color: #2874A6;">📌 Navigation:</b> Click <span
+style="background: #2874A6; color: white; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px;">Code</span>
+buttons to view R code. Use the sidebar to navigate sections.</p>
+</div>
+</div>
+<hr />
+<div id="section-interactive-overview-of-movie-data"
+class="section level1">
+<h1><span style="color:#2874A6;">1. 📋 Interactive Overview of Movie
+Data</span></h1>
+<!-- Table Title -->
+<div
+style="text-align: center; color: #21618C; font-size: 18px; font-weight: bold; padding: 10px; margin-bottom:3px;">
+<p>IMDB Top 1000 Movies - Complete Dataset</p>
+</div>
+<div class="sourceCode" id="section-cb1"><pre
+class="sourceCode r"><code class="sourceCode r"><span id="section-cb1-1"><a href="#section-cb1-1" tabindex="-1"></a>movies <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;Dataset.csv&quot;</span>)</span>
+<span id="section-cb1-2"><a href="#section-cb1-2" tabindex="-1"></a><span class="fu">colnames</span>(movies) <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">&quot;Title&quot;</span>, <span class="st">&quot;Rating&quot;</span>, <span class="st">&quot;Votes&quot;</span>)</span>
+<span id="section-cb1-3"><a href="#section-cb1-3" tabindex="-1"></a>movies<span class="sc">$</span>Rating <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(movies<span class="sc">$</span>Rating)</span>
+<span id="section-cb1-4"><a href="#section-cb1-4" tabindex="-1"></a>movies<span class="sc">$</span>Votes <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(movies<span class="sc">$</span>Votes)</span>
+<span id="section-cb1-5"><a href="#section-cb1-5" tabindex="-1"></a></span>
+<span id="section-cb1-6"><a href="#section-cb1-6" tabindex="-1"></a>DT<span class="sc">::</span><span class="fu">datatable</span>(</span>
+<span id="section-cb1-7"><a href="#section-cb1-7" tabindex="-1"></a>  movies,</span>
+<span id="section-cb1-8"><a href="#section-cb1-8" tabindex="-1"></a>  <span class="at">extensions =</span> <span class="fu">c</span>(<span class="st">&#39;Buttons&#39;</span>),</span>
+<span id="section-cb1-9"><a href="#section-cb1-9" tabindex="-1"></a>  <span class="at">options =</span> <span class="fu">list</span>(</span>
+<span id="section-cb1-10"><a href="#section-cb1-10" tabindex="-1"></a>    <span class="at">pageLength =</span> <span class="dv">10</span>,</span>
+<span id="section-cb1-11"><a href="#section-cb1-11" tabindex="-1"></a>    <span class="at">dom =</span> <span class="st">&#39;Bfrtip&#39;</span>,  <span class="co"># B = buttons, f = filter, r = processing, t = table, i = info, p = pagination</span></span>
+<span id="section-cb1-12"><a href="#section-cb1-12" tabindex="-1"></a>    <span class="at">buttons =</span> <span class="fu">list</span>(</span>
+<span id="section-cb1-13"><a href="#section-cb1-13" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">extend =</span> <span class="st">&#39;copy&#39;</span>, <span class="at">className =</span> <span class="st">&#39;btn-sm&#39;</span>),</span>
+<span id="section-cb1-14"><a href="#section-cb1-14" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">extend =</span> <span class="st">&#39;csv&#39;</span>, <span class="at">className =</span> <span class="st">&#39;btn-sm&#39;</span>),</span>
+<span id="section-cb1-15"><a href="#section-cb1-15" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">extend =</span> <span class="st">&#39;excel&#39;</span>, <span class="at">className =</span> <span class="st">&#39;btn-sm&#39;</span>),</span>
+<span id="section-cb1-16"><a href="#section-cb1-16" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">extend =</span> <span class="st">&#39;pdf&#39;</span>, <span class="at">className =</span> <span class="st">&#39;btn-sm&#39;</span>),</span>
+<span id="section-cb1-17"><a href="#section-cb1-17" tabindex="-1"></a>      <span class="fu">list</span>(<span class="at">extend =</span> <span class="st">&#39;print&#39;</span>, <span class="at">className =</span> <span class="st">&#39;btn-sm&#39;</span>)</span>
+<span id="section-cb1-18"><a href="#section-cb1-18" tabindex="-1"></a>    ),</span>
+<span id="section-cb1-19"><a href="#section-cb1-19" tabindex="-1"></a>    <span class="at">scrollX =</span> <span class="cn">TRUE</span></span>
+<span id="section-cb1-20"><a href="#section-cb1-20" tabindex="-1"></a>  ),</span>
+<span id="section-cb1-21"><a href="#section-cb1-21" tabindex="-1"></a>  <span class="at">rownames =</span> <span class="cn">FALSE</span></span>
+<span id="section-cb1-22"><a href="#section-cb1-22" tabindex="-1"></a>)</span></code></pre></div>
+<div class="datatables html-widget html-fill-item" id="htmlwidget-8b3ea5a1801498773ce6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-8b3ea5a1801498773ce6">{"x":{"filter":"none","vertical":false,"extensions":["Buttons"],"data":[["The Shawshank Redemption","The Godfather","The Dark Knight","The Godfather: Part II","12 Angry Men","The Lord of the Rings: The Return of the King","Pulp Fiction","Schindler's List","Inception","Fight Club","The Lord of the Rings: The Fellowship of the Ring","Forrest Gump","Il buono, il brutto, il cattivo","The Lord of the Rings: The Two Towers","The Matrix","Goodfellas","Star Wars: Episode V - The Empire Strikes Back","One Flew Over the Cuckoo's Nest","Hamilton","Gisaengchung","Soorarai Pottru","Interstellar","Cidade de Deus","Sen to Chihiro no kamikakushi","Saving Private Ryan","The Green Mile","La vita è bella","Se7en","The Silence of the Lambs","Star Wars","Seppuku","Shichinin no samurai","It's a Wonderful Life","Joker","Whiplash","The Intouchables","The Prestige","The Departed","The Pianist","Gladiator","American History X","The Usual Suspects","Léon","The Lion King","Terminator 2: Judgment Day","Nuovo Cinema Paradiso","Hotaru no haka","Back to the Future","Once Upon a Time in the West","Psycho","Casablanca","Modern Times","City Lights","Capharnaüm","Ayla: The Daughter of War","Vikram Vedha","Kimi no na wa.","Dangal","Spider-Man: Into the Spider-Verse","Avengers: Endgame","Avengers: Infinity War","Coco","Django Unchained","The Dark Knight Rises","3 Idiots","Taare Zameen Par","WALL·E","The Lives of Others","Oldeuboi","Memento","Mononoke-hime","Once Upon a Time in America","Raiders of the Lost Ark","The Shining","Apocalypse Now","Alien","Anand","Tengoku to jigoku","Dr. Strangelove or: How I Learned to Stop Worrying and Love the Bomb","Witness for the Prosecution","Paths of Glory","Rear Window","Sunset Blvd.","The Great Dictator","1917","Tumbbad","Andhadhun","Drishyam","Jagten","Jodaeiye Nader az Simin","Incendies","Miracle in cell NO.7","Babam ve Oglum","Inglourious Basterds","Eternal Sunshine of the Spotless Mind","Amélie","Snatch","Requiem for a Dream","American Beauty","Good Will Hunting","Bacheha-Ye aseman","Toy Story","Braveheart","Reservoir Dogs","Full Metal Jacket","Idi i smotri","Aliens","Amadeus","Scarface","Star Wars: Episode VI - Return of the Jedi","Das Boot","Taxi Driver","The Sting","A Clockwork Orange","2001: A Space Odyssey","Per qualche dollaro in più","Lawrence of Arabia","The Apartment","North by Northwest","Vertigo","Singin' in the Rain","Ikiru","Ladri di biciclette","Double Indemnity","Citizen Kane","M - Eine Stadt sucht einen Mörder","Metropolis","The Kid","Chhichhore","Uri: The Surgical Strike","K.G.F: Chapter 1","Green Book","Three Billboards Outside Ebbing, Missouri","Talvar","Baahubali 2: The Conclusion","Klaus","Drishyam","Queen","Mandariinid","Bhaag Milkha Bhaag","Gangs of Wasseypur","Udaan","Paan Singh Tomar","El secreto de sus ojos","Warrior","Shutter Island","Up","The Wolf of Wall Street","Chak De! India","There Will Be Blood","Pan's Labyrinth","Toy Story 3","V for Vendetta","Rang De Basanti","Black","Batman Begins","Swades: We, the People","Der Untergang","Hauru no ugoku shiro","A Beautiful Mind","Hera Pheri","Lock, Stock and Two Smoking Barrels","L.A. Confidential","Eskiya","Heat","Casino","Andaz Apna Apna","Unforgiven","Indiana Jones and the Last Crusade","Dom za vesanje","Tonari no Totoro","Die Hard","Ran","Raging Bull","Stalker","Höstsonaten","The Message","Sholay","Monty Python and the Holy Grail","The Great Escape","To Kill a Mockingbird","Yôjinbô","Judgment at Nuremberg","Some Like It Hot","Smultronstället","Det sjunde inseglet","Du rififi chez les hommes","Dial M for Murder","Tôkyô monogatari","Rashômon","All About Eve","The Treasure of the Sierra Madre","To Be or Not to Be","The Gold Rush","Sherlock Jr.","Portrait de la jeune fille en feu","Pink","Koe no katachi","Contratiempo","Ah-ga-ssi","Mommy","Haider","Logan","Room","Relatos salvajes","Soul","Kis Uykusu","PK","OMG: Oh My God!","The Grand Budapest Hotel","Gone Girl","Ôkami kodomo no Ame to Yuki","Hacksaw Ridge","Inside Out","Barfi!","12 Years a Slave","Rush","Ford v Ferrari","Spotlight","Song of the Sea","Kahaani","Zindagi Na Milegi Dobara","Prisoners","Mad Max: Fury Road","A Wednesday","Gran Torino","Harry Potter and the Deathly Hallows: Part 2","Okuribito","Hachi: A Dog's Tale","Mary and Max","How to Train Your Dragon","Into the Wild","No Country for Old Men","Lage Raho Munna Bhai","Million Dollar Baby","Hotel Rwanda","Taegukgi hwinalrimyeo","Before Sunset","Munna Bhai M.B.B.S.","Salinui chueok","Dil Chahta Hai","Kill Bill: Vol. 1","Finding Nemo","Catch Me If You Can","Amores perros","Monsters, Inc.","Shin seiki Evangelion Gekijô-ban: Air/Magokoro wo, kimi ni","Lagaan: Once Upon a Time in India","The Sixth Sense","La leggenda del pianista sull'oceano","The Truman Show","Crna macka, beli macor","The Big Lebowski","Fa yeung nin wah","Trainspotting","Fargo","Underground","La haine","Dilwale Dulhania Le Jayenge","Before Sunrise","Trois couleurs: Rouge","Chung Hing sam lam","Jurassic Park","In the Name of the Father","Ba wang bie ji","Dà hóng denglong gaogao guà","Dead Poets Society","Stand by Me","Platoon","Paris, Texas","Kaze no tani no Naushika","The Thing","Pink Floyd: The Wall","Fitzcarraldo","Fanny och Alexander","Blade Runner","The Elephant Man","Life of Brian","The Deer Hunter","Rocky","Network","Barry Lyndon","Zerkalo","Chinatown","Paper Moon","Viskningar och rop","Solaris","Le samouraï","Cool Hand Luke","Persona","Andrei Rublev","La battaglia di Algeri","El ángel exterminador","What Ever Happened to Baby Jane?","Sanjuro","The Man Who Shot Liberty Valance","Ivanovo detstvo","Jungfrukällan","Inherit the Wind","Les quatre cents coups","Ben-Hur","Kakushi-toride no san-akunin","Le notti di Cabiria","Kumonosu-jô","The Bridge on the River Kwai","On the Waterfront","Le salaire de la peur","Ace in the Hole","White Heat","The Third Man","The Red Shoes","The Shop Around the Corner","Rebecca","Mr. Smith Goes to Washington","Gone with the Wind","La Grande Illusion","It Happened One Night","La passion de Jeanne d'Arc","The Circus","Sunrise: A Song of Two Humans","The General","Das Cabinet des Dr. Caligari","Badhaai ho","Togo","Airlift","Bajrangi Bhaijaan","Baby","La La Land","Lion","The Martian","Zootopia","Bãhubali: The Beginning","Kaguyahime no monogatari","Wonder","Gully Boy","Special Chabbis","Short Term 12","Serbuan maut 2: Berandal","The Imitation Game","Guardians of the Galaxy","Blade Runner 2049","Her","Bohemian Rhapsody","The Revenant","The Perks of Being a Wallflower","Tropa de Elite 2: O Inimigo Agora é Outro","The King's Speech","The Help","Deadpool","Darbareye Elly","Dev.D","Yip Man","My Name Is Khan","Nefes: Vatan Sagolsun","Slumdog Millionaire","Black Swan","Tropa de Elite","The Avengers","Persepolis","Dallas Buyers Club","The Pursuit of Happyness","Blood Diamond","The Bourne Ultimatum","Bin-jip","Sin City","Le scaphandre et le papillon","G.O.R.A.","Ratatouille","Casino Royale","Kill Bill: Vol. 2","Vozvrashchenie","Bom Yeoareum Gaeul Gyeoul Geurigo Bom","Mar adentro","Cinderella Man","Kal Ho Naa Ho","Mou gaan dou","Pirates of the Caribbean: The Curse of the Black Pearl","Big Fish","The Incredibles","Yeopgijeogin geunyeo","Dogville","Vizontele","Donnie Darko","Magnolia","Dancer in the Dark","The Straight Story","Pâfekuto burû","Festen","Central do Brasil","The Iron Giant","Knockin' on Heaven's Door","Sling Blade","Secrets &amp; Lies","Twelve Monkeys","Kôkaku Kidôtai","The Nightmare Before Christmas","Groundhog Day","Bound by Honor","Scent of a Woman","Aladdin","JFK","Beauty and the Beast","Dances with Wolves","Do the Right Thing","Rain Man","Akira","The Princess Bride","Der Himmel über Berlin","Au revoir les enfants","Tenkû no shiro Rapyuta","The Terminator","Gandhi","Kagemusha","Being There","Annie Hall","Jaws","Dog Day Afternoon","Young Frankenstein","Papillon","The Exorcist","Sleuth","The Last Picture Show","Fiddler on the Roof","Il conformista","Butch Cassidy and the Sundance Kid","Rosemary's Baby","Planet of the Apes","The Graduate","Who's Afraid of Virginia Woolf?","The Sound of Music","Doctor Zhivago","Per un pugno di dollari","8½","Vivre sa vie: Film en douze tableaux","The Hustler","La dolce vita","Rio Bravo","Anatomy of a Murder","Touch of Evil","Cat on a Hot Tin Roof","Sweet Smell of Success","The Killing","The Night of the Hunter","La Strada","Les diaboliques","Stalag 17","Roman Holiday","A Streetcar Named Desire","In a Lonely Place","Kind Hearts and Coronets","Rope","Out of the Past","Brief Encounter","Laura","The Best Years of Our Lives","Arsenic and Old Lace","The Maltese Falcon","The Grapes of Wrath","The Wizard of Oz","La règle du jeu","The Thin Man","All Quiet on the Western Front","Bronenosets Potemkin","Knives Out","Dil Bechara","Manbiki kazoku","Marriage Story","Call Me by Your Name","I, Daniel Blake","Isle of Dogs","Hunt for the Wilderpeople","Captain Fantastic","Sing Street","Thor: Ragnarok","Nightcrawler","Jojo Rabbit","Arrival","Star Wars: Episode VII - The Force Awakens","Before Midnight","X-Men: Days of Future Past","Bir Zamanlar Anadolu'da","The Artist","Edge of Tomorrow","Amour","The Irishman","Un prophète","Moon","Låt den rätte komma in","District 9","The Wrestler","Jab We Met","Boyhood","4 luni, 3 saptamâni si 2 zile","Star Trek","In Bruges","The Man from Earth","Letters from Iwo Jima","The Fall","Life of Pi","Fantastic Mr. Fox","C.R.A.Z.Y.","Les choristes","Iron Man","Shaun of the Dead","Gegen die Wand","Mystic River","Harry Potter and the Prisoner of Azkaban","Ying xiong","Hable con ella","No Man's Land","Cowboy Bebop: Tengoku no tobira","The Bourne Identity","Nueve reinas","Children of Men","Almost Famous","Mulholland Dr.","Toy Story 2","Boogie Nights","Mimi wo sumaseba","Once Were Warriors","True Romance","Trois couleurs: Bleu","Jûbê ninpûchô","Carlito's Way","Edward Scissorhands","My Left Foot: The Story of Christy Brown","Crimes and Misdemeanors","The Untouchables","Hannah and Her Sisters","Brazil","This Is Spinal Tap","A Christmas Story","The Blues Brothers","Manhattan","All That Jazz","Dawn of the Dead","All the President's Men","La montaña sagrada","Amarcord","Le charme discret de la bourgeoisie","Aguirre, der Zorn Gottes","Harold and Maude","Patton","The Wild Bunch","Night of the Living Dead","The Lion in Winter","In the Heat of the Night","Charade","The Manchurian Candidate","Spartacus","L'avventura","Hiroshima mon amour","The Ten Commandments","The Searchers","East of Eden","High Noon","Strangers on a Train","Harvey","Miracle on 34th Street","Notorious","The Big Sleep","The Lost Weekend","The Philadelphia Story","His Girl Friday","The Adventures of Robin Hood","A Night at the Opera","King Kong","Freaks","Nosferatu","The Gentlemen","Raazi","Sound of Metal","Forushande","Dunkirk","Perfetti sconosciuti","Hidden Figures","Paddington 2","Udta Punjab","Kubo and the Two Strings","M.S. Dhoni: The Untold Story","Manchester by the Sea","Under sandet","Rogue One","Captain America: Civil War","The Hateful Eight","Little Women","Loving Vincent","Pride","Le passé","La grande bellezza","The Lunchbox","Vicky Donor","Big Hero 6","About Time","English Vinglish","Kaze tachinu","Toy Story 4","La migliore offerta","Moonrise Kingdom","How to Train Your Dragon 2","The Big Short","Kokuhaku","Ang-ma-reul bo-at-da","The Girl with the Dragon Tattoo","Captain Phillips","Ajeossi","Straight Outta Compton","Madeo","Chugyeokja","The Hobbit: The Desolation of Smaug","Das weiße Band - Eine deutsche Kindergeschichte","Män som hatar kvinnor","The Trial of the Chicago 7","Druk","The Fighter","Taken","The Boy in the Striped Pyjamas","Once","The Hobbit: An Unexpected Journey","Auf der anderen Seite","Atonement","Drive","American Gangster","Avatar","Mr. Nobody","Apocalypto","Little Miss Sunshine","Hot Fuzz","The Curious Case of Benjamin Button","Veer-Zaara","Adams æbler","Pride &amp; Prejudice","The World's Fastest Indian","Tôkyô goddofâzâzu","Serenity","Walk the Line","Ondskan","The Notebook","Diarios de motocicleta","Lilja 4-ever","Les triplettes de Belleville","Gongdong gyeongbi guyeok JSA","The Count of Monte Cristo","Waking Life","Remember the Titans","Wo hu cang long","Todo sobre mi madre","Cast Away","The Boondock Saints","The Insider","October Sky","Shrek","Titanic","Hana-bi","Gattaca","The Game","Breaking the Waves","Ed Wood","What's Eating Gilbert Grape","Tombstone","The Sandlot","The Remains of the Day","Naked","The Fugitive","A Bronx Tale","Batman: Mask of the Phantasm","Lat sau san taam","Night on Earth","La double vie de Véronique","Boyz n the Hood","Misery","Awakenings","Majo no takkyûbin","Glory","Dip huet seung hung","Back to the Future Part II","Mississippi Burning","Predator","Evil Dead II","Ferris Bueller's Day Off","Down by Law","The Goonies","The Color Purple","The Breakfast Club","The Killing Fields","Ghostbusters","The Right Stuff","The King of Comedy","E.T. the Extra-Terrestrial","Kramer vs. Kramer","Days of Heaven","The Outlaw Josey Wales","The Man Who Would Be King","The Conversation","La planète sauvage","The Day of the Jackal","Badlands","Cabaret","Willy Wonka &amp; the Chocolate Factory","Midnight Cowboy","Wait Until Dark","Guess Who's Coming to Dinner","Bonnie and Clyde","My Fair Lady","Mary Poppins","The Longest Day","Jules et Jim","The Innocents","À bout de souffle","Red River","Key Largo","To Have and Have Not","Shadow of a Doubt","Stagecoach","The Lady Vanishes","Bringing Up Baby","Bride of Frankenstein","Duck Soup","Scarface: The Shame of the Nation","Frankenstein","Roma","God's Own Country","Deadpool 2","Wind River","Get Out","Mission: Impossible - Fallout","En man som heter Ove","What We Do in the Shadows","Omoide no Mânî","The Theory of Everything","Kingsman: The Secret Service","The Fault in Our Stars","Me and Earl and the Dying Girl","Birdman or (The Unexpected Virtue of Ignorance)","La vie d'Adèle","Kai po che!","The Broken Circle Breakdown","Captain America: The Winter Soldier","Rockstar","Nebraska","Wreck-It Ralph","Le Petit Prince","Detachment","Midnight in Paris","The Lego Movie","Gravity","Star Trek Into Darkness","Beasts of No Nation","The Social Network","X: First Class","The Hangover","Skyfall","Silver Linings Playbook","Argo","(500) Days of Summer","Harry Potter and the Deathly Hallows: Part 1","Gake no ue no Ponyo","Frost/Nixon","Papurika","Changeling","Flipped","Toki o kakeru shôjo","Death Note: Desu nôto","This Is England","Ex Machina","Efter brylluppet","The Last King of Scotland","Zodiac","Lucky Number Slevin","Joyeux Noël","Control","Tangled","Zwartboek","Brokeback Mountain","3:10 to Yuma","Crash","Kung fu","The Bourne Supremacy","The Machinist","Ray","Lost in Translation","Harry Potter and the Goblet of Fire","Man on Fire","Coraline","The Last Samurai","The Magdalene Sisters","Good Bye Lenin!","In America","I Am Sam","Adaptation.","Black Hawk Down","Road to Perdition","Das Experiment","Billy Elliot","Hedwig and the Angry Inch","Ocean's Eleven","Vampire Hunter D: Bloodlust","O Brother, Where Art Thou?","Interstate 60: Episodes of the Road","South Park: Bigger, Longer &amp; Uncut","Office Space","Happiness","Training Day","Rushmore","Abre los ojos","Being John Malkovich","As Good as It Gets","The Fifth Element","Le dîner de cons","Donnie Brasco","Shine","Primal Fear","Hamlet","A Little Princess","Do lok tin si","Il postino","Clerks","Short Cuts","Philadelphia","The Muppet Christmas Carol","Malcolm X","The Last of the Mohicans","Kurenai no buta","Glengarry Glen Ross","A Few Good Men","Fried Green Tomatoes","Barton Fink","Miller's Crossing","Who Framed Roger Rabbit","Spoorloos","Withnail &amp; I","The Last Emperor","Empire of the Sun","Der Name der Rose","Blue Velvet","The Purple Rose of Cairo","After Hours","Zelig","The Verdict","Star Trek II: The Wrath of Khan","First Blood","Ordinary People","Airplane!","Rupan sansei: Kariosutoro no shiro","Halloween","Le locataire","Love and Death","The Taking of Pelham One Two Three","Blazing Saddles","Serpico","Enter the Dragon","Deliverance","The French Connection","Dirty Harry","Where Eagles Dare","The Odd Couple","The Dirty Dozen","Belle de jour","A Man for All Seasons","Repulsion","Zulu","Goldfinger","The Birds","Cape Fear","Peeping Tom","The Magnificent Seven","Les yeux sans visage","Invasion of the Body Snatchers","Rebel Without a Cause","The Ladykillers","Sabrina","The Quiet Man","The Day the Earth Stood Still","The African Queen","Gilda","Fantasia","The Invisible Man","Dark Waters","Searching","Once Upon a Time... in Hollywood","Nelyubov","The Florida Project","Just Mercy","Gifted","The Peanut Butter Falcon","Victoria","Mustang","Guardians of the Galaxy Vol. 2","Baby Driver","Only the Brave","Bridge of Spies","Incredibles 2","Moana","Sicario","Creed","Leviafan","Hell or High Water","Philomena","Dawn of the Planet of the Apes","El cuerpo","Serbuan maut","End of Watch","Kari-gurashi no Arietti","A Star Is Born","True Grit","Hævnen","Despicable Me","50/50","Kick-Ass","Celda 211","Moneyball","La piel que habito","Zombieland","Die Welle","Sherlock Holmes","The Blind Side","The Visitor","Seven Pounds","Eastern Promises","Stardust","The Secret of Kells","Inside Man","Gone Baby Gone","La Vie En Rose","Huo Yuan Jia","The Illusionist","Dead Man's Shoes","Harry Potter and the Half-Blood Prince","300","Match Point","Watchmen","Lord of War","Saw","Synecdoche, New York","Mysterious Skin","Jeux d'enfants","Un long dimanche de fiançailles","The Station Agent","21 Grams","Boksuneun naui geot","Finding Neverland","25th Hour","The Butterfly Effect","28 Days Later...","Batoru rowaiaru","The Royal Tenenbaums","Y tu mamá también","Harry Potter and the Sorcerer's Stone","The Others","Blow","Enemy at the Gates","Minority Report","The Hurricane","American Psycho","Lola rennt","The Thin Red Line","Mulan","Fear and Loathing in Las Vegas","Funny Games","Dark City","Sleepers","Lost Highway","Sense and Sensibility","Die Hard: With a Vengeance","Dead Man","The Bridges of Madison County","Apollo 13","Trois couleurs: Blanc","Falling Down","Dazed and Confused","My Cousin Vinny","Omohide poro poro","Delicatessen","Home Alone","The Godfather: Part III","When Harry Met Sally...","The Little Mermaid","The Naked Gun: From the Files of Police Squad!","Planes, Trains &amp; Automobiles","Lethal Weapon","Blood Simple","On Golden Pond","Mad Max 2","The Warriors","The Muppet Movie","Escape from Alcatraz","Watership Down","Midnight Express","Close Encounters of the Third Kind","The Long Goodbye","Giù la testa","Kelly's Heroes","The Jungle Book","Blowup","A Hard Day's Night","Breakfast at Tiffany's","Giant","From Here to Eternity","Lifeboat","The 39 Steps"],[9.300000000000001,9.199999999999999,9,9,9,8.9,8.9,8.9,8.800000000000001,8.800000000000001,8.800000000000001,8.800000000000001,8.800000000000001,8.699999999999999,8.699999999999999,8.699999999999999,8.699999999999999,8.699999999999999,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.6,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.5,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.300000000000001,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.199999999999999,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8.1,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,8,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.9,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.8,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.7,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6,7.6],[2343110,1620367,2303232,1129952,689845,1642758,1826188,1213505,2067042,1854740,1661481,1809221,688390,1485555,1676426,1020727,1159315,918088,55291,552778,54995,1512360,699256,651376,1235804,1147794,623629,1445096,1270197,1231473,42004,315744,405801,939252,717585,760360,1190259,1189773,729603,1341460,1034705,991208,1035236,942045,995506,230763,235231,1058081,302844,604211,522093,217881,167839,62635,34112,28401,194838,156479,375110,809955,834477,384171,1357682,1516346,344445,168895,999790,358685,515451,1125712,343171,311365,884112,898237,606398,787806,30273,34357,450474,108862,178092,444074,201632,203150,425844,27793,71875,30722,281623,220002,150023,33935,78925,1267869,911664,703810,782001,766870,1069738,861606,65341,887429,959181,918562,675146,59056,652719,369007,740911,950470,231855,724636,241513,757904,603517,232772,268085,164363,299198,364368,218957,68463,146427,143525,403351,143434,159992,113314,33893,43444,36680,377884,432610,31142,75348,104761,70367,60701,40382,61137,82365,42341,33237,193217,435950,1129894,935507,1187498,74129,517359,618623,757032,1032749,111937,33354,1308302,83005,331308,333915,848920,57057,535216,531967,64118,577113,466276,49300,375935,692366,26402,291180,793164,112505,321860,116945,26875,43885,51284,500875,224730,293811,111244,69458,243943,96381,164939,28810,158335,53153,152572,120539,114304,29915,101053,41985,63134,39216,47708,141516,113649,50700,50445,647884,371538,177059,159171,46547,163061,51739,707630,859695,38803,435928,616228,75721,640533,432811,291289,420316,51679,57806,67927,601149,882316,73891,720450,764493,48582,253575,164462,666773,572921,856916,43137,635975,334320,37820,236311,73992,139558,66803,1000639,949565,832846,223741,815505,38847,105036,911573,59020,939631,50862,732620,124383,634716,617444,55220,150345,63516,272291,90729,63122,867615,156842,25088,29662,425457,363401,381222,91188,150924,371271,76081,31595,57784,693827,220078,367250,311361,518546,144911,149843,40081,294230,42285,30206,81021,45434,161984,103191,46947,53089,29682,50058,33044,68827,31728,26697,27254,105291,219466,34797,42940,46678,203463,142107,54588,31568,29807,158731,30935,28450,123942,107017,290074,33829,94016,47676,30205,46865,81156,57428,27978,37556,52897,72245,52848,505918,213970,760094,434143,102972,38746,141923,31886,51069,81770,114316,685201,1043455,461823,540772,450349,705589,462252,79200,639603,428521,902669,45803,28749,211427,98575,31838,798882,699673,98097,1260806,88656,441614,448930,499439,604694,50610,738512,103284,56960,641645,582239,683900,42399,77520,77554,176151,63460,117857,1015122,415218,657047,45403,137963,33592,740086,289742,102285,82002,58192,78341,36419,172083,27721,86838,37564,578443,129231,300208,577991,28825,263918,373845,142110,417178,240266,89429,473064,164918,393899,64722,31163,150140,799795,217664,32195,65625,251823,543388,235652,143359,121627,362393,44748,42456,39491,27067,201888,193674,165167,253676,68926,205425,69903,198219,108844,28057,75067,66621,56305,59847,98431,45062,28137,81702,81980,58314,61503,51046,127256,99182,26784,34485,129783,32784,35601,42725,57259,65101,148928,85559,371379,26725,26642,57318,53054,454203,111478,62754,246644,212651,53818,139114,111483,189400,85109,587775,466134,297918,594181,860823,141457,659763,41995,230624,600004,93090,324720,93560,335152,205609,638202,289415,47720,335533,56625,577336,390334,174125,154011,107290,580708,199696,31476,57430,939644,512249,51325,419420,552493,173999,104691,44618,42897,508771,49721,465113,252586,322031,527512,239473,51943,31590,206918,89836,34529,201000,447368,68076,54670,281842,67176,187567,128812,132947,183182,131436,28223,111512,103031,37183,39897,38737,52397,70826,93741,77401,116557,29003,67804,68689,71122,124339,26542,28421,63560,80316,40313,97222,123341,52573,41625,92306,78796,33549,63550,53667,47175,30580,78991,42117,88794,237392,25344,27187,51240,555092,57168,200876,61594,27175,118035,40416,246963,35539,556608,663649,517059,143250,50778,51841,45002,81125,50523,39710,410983,303032,33618,73690,203177,108399,318789,305611,362942,35713,111252,423010,421244,62848,179264,52758,58468,601408,68715,208994,89896,33931,340584,564791,190748,110656,757377,30827,251370,571571,392449,1118998,216421,291018,439856,463466,589160,49050,45717,258924,51980,31658,283310,234207,35682,520284,96703,42673,50622,26518,129022,60684,198089,253228,89058,524235,227143,159886,82855,613941,1046089,27712,280845,345096,62428,164937,215034,126871,78963,66065,34635,267684,128171,43690,46700,55362,42376,126082,184740,125276,124193,122779,45624,481918,88214,371387,148359,321382,47834,244430,78321,357026,51585,355413,56235,88511,372490,133351,52852,65659,44917,98611,25229,37445,66009,48334,178731,101124,27733,39642,102415,86525,158029,52141,37605,27007,73251,28167,36995,31053,59556,43621,47400,55163,43542,55581,25312,65341,140375,25198,478586,205444,492851,291257,47444,157498,32798,404182,590440,344312,123210,580291,138741,32628,39379,736182,39501,112298,380195,56720,77071,388089,323982,769145,463188,73964,624982,645512,717559,630614,661871,572581,472242,479120,125317,103330,71379,239203,81446,60368,28630,115576,474141,32001,175355,466080,299524,28003,61609,405922,72643,323103,288797,419483,127250,434841,358432,138356,415074,548619,329592,197761,400049,25938,137981,40403,142863,178565,364254,246840,90842,126770,31957,516372,29210,286742,29999,192112,241575,66408,390247,169229,64082,312542,275755,434125,37424,279318,51350,189716,35991,32236,26429,33600,211450,42275,224169,50298,85819,150409,77798,95826,235388,66941,113240,125822,182009,33982,40396,94326,115677,102031,181285,47102,59635,39881,36096,112704,226541,47099,214882,27014,233106,39889,36037,26729,125993,109941,96561,98740,110075,143292,51913,31572,67183,40274,31222,48883,35999,174119,171739,26457,31354,87719,27620,44839,83363,26464,59415,34677,76315,71481,27991,88662,30683,60408,140840,551309,29765,95181,46739,99643,66346,52903,35785,569974,439406,58371,287659,250057,272784,371291,247666,49397,204175,94212,411599,57549,190531,228132,80939,334312,311822,38491,500851,315426,524081,63882,369529,138959,520041,102742,583158,293266,41544,286770,227760,255036,31779,339757,250590,82781,72863,354728,49728,474827,732876,206294,500799,294140,379020,83158,65939,67360,70925,67370,224545,62659,198677,169708,451479,376853,169091,266842,115827,658185,337651,240714,243729,508417,91557,490062,188317,172710,256906,259753,65058,187927,186734,131101,102598,364420,90442,73172,269197,64390,171640,165465,107325,27071,80487,488817,359809,195663,237696,152871,124773,236894,87745,27650,166588,93878,32802,121731,33656,73662,184966,26337,30144,45338,166409,56513,40351,166544,34075,43374,26471,51853]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Title<\/th>\n      <th>Rating<\/th>\n      <th>Votes<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":10,"dom":"Bfrtip","buttons":[{"extend":"copy","className":"btn-sm"},{"extend":"csv","className":"btn-sm"},{"extend":"excel","className":"btn-sm"},{"extend":"pdf","className":"btn-sm"},{"extend":"print","className":"btn-sm"}],"scrollX":true,"columnDefs":[{"className":"dt-right","targets":[1,2]},{"name":"Title","targets":0},{"name":"Rating","targets":1},{"name":"Votes","targets":2}],"order":[],"autoWidth":false,"orderClasses":false},"selection":{"mode":"multiple","selected":null,"target":"row","selectable":null}},"evals":[],"jsHooks":[]}</script>
+<!-- Export/Copy/Excel Buttons Placement (centered, below table) -->
+<div
+style="display:flex; justify-content:center; align-items:center; margin-top:15px;">
+<div id="section-datatable-export-buttons">
+
+</div>
+</div>
+<div
+style="background-color:#FEF9E7; padding:15px; border-radius:10px; font-size:15px; margin-top:10px;">
+<p><b>Note:</b> The table allows you to <b>copy</b> data, export it as
+<b>CSV</b>, <b>Excel</b>, or <b>PDF</b>, and also directly
+<b>print</b>.</p>
+</div>
+<hr />
+</div>
+<div id="section-key-descriptive-statistics" class="section level1">
+<h1><span style="color:#2874A6;">2. 📊 Key Descriptive
+Statistics</span></h1>
+<div style="display:flex; gap:40px; justify-content:center;">
+<div
+style="flex:1; background:#EBF5FB; padding:17px 20px; border-radius:13px; text-align:center;">
+<span style="font-size:18px;font-weight:bold;color:#21618C;">IMDB
+Ratings</span><br>
+<ul style="font-size:16px;line-height:1.35;text-align:left; display:inline-block;">
+<li>
+<b>Mean:</b> <span style="color:#1F618D;">7.95</span>
+</li>
+<li>
+<b>Median:</b> <span style="color:#117A65;">7.9</span>
+</li>
+<li>
+<b>Std Dev:</b> <span style="color:#BA4A00;">0.28</span>
+</li>
+<li>
+<b>Range:</b> <span style="color:#884EA0;">7.6 - 9.3</span>
+</li>
+</ul>
+</div>
+<div
+style="flex:1; background:#FDF2E9; padding:17px 20px; border-radius:13px; text-align:center;">
+<span style="font-size:18px;font-weight:bold;color:#21618C;">Votes
+(Popularity)</span><br>
+<ul style="font-size:16px;line-height:1.35;text-align:left; display:inline-block;">
+<li>
+<b>Mean:</b> <span style="color:#BA4A00;">273,693</span>
+</li>
+<li>
+<b>Median:</b> <span style="color:#117A65;">138,548</span>
+</li>
+<li>
+<b>Std Dev:</b> <span style="color:#5D6D7E;">327,373</span>
+</li>
+<li>
+<b>Range:</b> <span style="color:#884EA0;">25,088 - 2,343,110</span>
+</li>
+</ul>
+</div>
+</div>
+<hr />
+</div>
+<div id="section-relationship-strength" class="section level1">
+<h1><span style="color:#21618C;">3. 🔗 Relationship Strength</span></h1>
+<div
+style="background-color:#E9F7EF; padding:18px 25px; border-radius:14px; text-align:center;">
+<p><span style="font-size:19px;"> <b>Correlation coefficient (r):</b>
+<span style="color:#C0392B;font-size:25px;"><b>0.495</b></span> </span>
+<br> <b>Interpretation:</b> <span style="color:#154360;"> Moderate
+positive relationship </span></p>
+</div>
+<hr />
+</div>
+<div id="section-graphical-exploration-of-relationships"
+class="section level1">
+<h1><span style="color:#2874A6;">4. 🎨 Graphical Exploration of
+Relationships</span></h1>
+<div
+style="text-align:center; font-size:20px; color:#21618C; font-weight:bold; margin-top:20px; margin-bottom:10px;">
+<p>Popularity Distribution Across IMDB Ratings</p>
+</div>
+<div class="sourceCode" id="section-cb2"><pre
+class="sourceCode r"><code class="sourceCode r"><span id="section-cb2-1"><a href="#section-cb2-1" tabindex="-1"></a><span class="co"># Ensure hexbin package is installed</span></span>
+<span id="section-cb2-2"><a href="#section-cb2-2" tabindex="-1"></a><span class="cf">if</span> (<span class="sc">!</span><span class="fu">requireNamespace</span>(<span class="st">&quot;hexbin&quot;</span>, <span class="at">quietly =</span> <span class="cn">TRUE</span>)) {</span>
+<span id="section-cb2-3"><a href="#section-cb2-3" tabindex="-1"></a>  <span class="fu">install.packages</span>(<span class="st">&quot;hexbin&quot;</span>)</span>
+<span id="section-cb2-4"><a href="#section-cb2-4" tabindex="-1"></a>}</span>
+<span id="section-cb2-5"><a href="#section-cb2-5" tabindex="-1"></a><span class="fu">library</span>(hexbin)</span>
+<span id="section-cb2-6"><a href="#section-cb2-6" tabindex="-1"></a></span>
+<span id="section-cb2-7"><a href="#section-cb2-7" tabindex="-1"></a><span class="co"># Hexbin plot with trendline</span></span>
+<span id="section-cb2-8"><a href="#section-cb2-8" tabindex="-1"></a>p_hex <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(movies, <span class="fu">aes</span>(<span class="at">x =</span> Rating, <span class="at">y =</span> Votes)) <span class="sc">+</span></span>
+<span id="section-cb2-9"><a href="#section-cb2-9" tabindex="-1"></a>  <span class="fu">geom_hex</span>(<span class="at">bins =</span> <span class="dv">25</span>) <span class="sc">+</span></span>
+<span id="section-cb2-10"><a href="#section-cb2-10" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;lm&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#C0392B&quot;</span>, <span class="at">se =</span> <span class="cn">TRUE</span>, <span class="at">linetype =</span> <span class="st">&quot;solid&quot;</span>, <span class="at">linewidth =</span> <span class="fl">1.3</span>) <span class="sc">+</span></span>
+<span id="section-cb2-11"><a href="#section-cb2-11" tabindex="-1"></a>  <span class="fu">scale_fill_gradient</span>(<span class="at">low =</span> <span class="st">&quot;#AED6F1&quot;</span>, <span class="at">high =</span> <span class="st">&quot;#1F618D&quot;</span>, <span class="at">name =</span> <span class="st">&quot;Count&quot;</span>) <span class="sc">+</span></span>
+<span id="section-cb2-12"><a href="#section-cb2-12" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb2-13"><a href="#section-cb2-13" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="section-cb2-14"><a href="#section-cb2-14" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;IMDB Rating vs Votes (Hexbin Density with Trendline)&quot;</span>,</span>
+<span id="section-cb2-15"><a href="#section-cb2-15" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;IMDB Rating&quot;</span>, </span>
+<span id="section-cb2-16"><a href="#section-cb2-16" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Votes&quot;</span></span>
+<span id="section-cb2-17"><a href="#section-cb2-17" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="section-cb2-18"><a href="#section-cb2-18" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb2-19"><a href="#section-cb2-19" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb2-20"><a href="#section-cb2-20" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">14</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-21"><a href="#section-cb2-21" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-22"><a href="#section-cb2-22" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-23"><a href="#section-cb2-23" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">&quot;right&quot;</span></span>
+<span id="section-cb2-24"><a href="#section-cb2-24" tabindex="-1"></a>  )</span>
+<span id="section-cb2-25"><a href="#section-cb2-25" tabindex="-1"></a></span>
+<span id="section-cb2-26"><a href="#section-cb2-26" tabindex="-1"></a><span class="co"># Boxplot remains as before</span></span>
+<span id="section-cb2-27"><a href="#section-cb2-27" tabindex="-1"></a>movies<span class="sc">$</span>RatingGroup <span class="ot">&lt;-</span> <span class="fu">cut</span>(movies<span class="sc">$</span>Rating, </span>
+<span id="section-cb2-28"><a href="#section-cb2-28" tabindex="-1"></a>                          <span class="at">breaks =</span> <span class="fu">seq</span>(<span class="fu">floor</span>(<span class="fu">min</span>(movies<span class="sc">$</span>Rating)), <span class="fu">ceiling</span>(<span class="fu">max</span>(movies<span class="sc">$</span>Rating)), <span class="at">by =</span> <span class="fl">0.5</span>),</span>
+<span id="section-cb2-29"><a href="#section-cb2-29" tabindex="-1"></a>                          <span class="at">include.lowest =</span> <span class="cn">TRUE</span>, <span class="at">right =</span> <span class="cn">FALSE</span>, <span class="at">dig.lab =</span> <span class="dv">3</span>)</span>
+<span id="section-cb2-30"><a href="#section-cb2-30" tabindex="-1"></a>p_box <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(movies, <span class="fu">aes</span>(<span class="at">x =</span> RatingGroup, <span class="at">y =</span> Votes)) <span class="sc">+</span></span>
+<span id="section-cb2-31"><a href="#section-cb2-31" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">&quot;#F5B041&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#BA4A00&quot;</span>, <span class="at">outlier.colour =</span> <span class="st">&quot;red&quot;</span>, <span class="at">outlier.shape =</span> <span class="dv">16</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="section-cb2-32"><a href="#section-cb2-32" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb2-33"><a href="#section-cb2-33" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="section-cb2-34"><a href="#section-cb2-34" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">&quot;Votes Distribution by IMDB Rating Group&quot;</span>,</span>
+<span id="section-cb2-35"><a href="#section-cb2-35" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">&quot;IMDB Rating Group&quot;</span>, </span>
+<span id="section-cb2-36"><a href="#section-cb2-36" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">&quot;Number of Votes&quot;</span></span>
+<span id="section-cb2-37"><a href="#section-cb2-37" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="section-cb2-38"><a href="#section-cb2-38" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb2-39"><a href="#section-cb2-39" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb2-40"><a href="#section-cb2-40" tabindex="-1"></a>    <span class="at">axis.text.x =</span> <span class="fu">element_text</span>(<span class="at">angle =</span> <span class="dv">45</span>, <span class="at">hjust =</span> <span class="dv">1</span>, <span class="at">size =</span> <span class="dv">10</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-41"><a href="#section-cb2-41" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">14</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-42"><a href="#section-cb2-42" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb2-43"><a href="#section-cb2-43" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="section-cb2-44"><a href="#section-cb2-44" tabindex="-1"></a>  )</span>
+<span id="section-cb2-45"><a href="#section-cb2-45" tabindex="-1"></a></span>
+<span id="section-cb2-46"><a href="#section-cb2-46" tabindex="-1"></a><span class="fu">grid.arrange</span>(p_hex, p_box, <span class="at">ncol =</span> <span class="dv">2</span>)</span></code></pre></div>
+<p><img src="Last Prediction Model_files/figure-html/combined-visual-1.png" width="1536" style="display: block; margin: auto;" /></p>
+<div
+style="background: #E8F6F3; padding: 18px; border-radius: 9px; margin: 20px; border-left: 5px solid #27AE60;">
+<h4 style="color: #2874A6; margin-top: 0;">
+How to interpret:
+</h4>
+<ul style="font-size: 15px; line-height: 1.8;">
+<li>
+<b>Hexbin Density Plot:</b> Each hexagon’s color intensity shows how
+many movies fall into that IMDB rating/votes range. Darker hexagons =
+more movies in that region. The red trendline shows the overall positive
+relationship: as IMDB rating increases, votes tend to increase too.
+</li>
+<li>
+<b>Boxplot:</b> Each box summarizes the spread of votes (popularity) for
+a 0.5 rating group. The box shows the middle 50% of movies, the line is
+the median, and dots outside are outliers. Compare medians and spreads
+to see how popularity varies with rating.
+</li>
+</ul>
+</div>
+<hr />
+</div>
+<div id="section-predictive-modeling-diagnostics"
+class="section level1">
+<h1><span style="color:#2874A6;">5. 🔮 Predictive Modeling &amp;
+Diagnostics</span></h1>
+<div
+style="background-color:#FCF3CF;padding:10px 20px;border-radius:11px; margin-bottom:12px; text-align:center;">
+<p><b style="color:#2874A6;">Prediction Equation:</b><br> <span
+style="background-color:#FADBD8; color:#C0392B; font-weight:bold; padding:4px 8px; border-radius:6px; display:inline-block; margin:6px 0;">
+Votes = -4.1931832^{6} + 5.6194027^{5} × Rating </span><br> <b>R²:</b>
+<span style="color:#2874A6;">0.23</span>   <b>RMSE:</b> <span
+style="color:#2874A6;">293,877</span> votes   <b>MAE:</b> <span
+style="color:#2874A6;">218,293</span> votes</p>
+</div>
+<div class="sourceCode" id="section-cb3"><pre
+class="sourceCode r"><code class="sourceCode r"><span id="section-cb3-1"><a href="#section-cb3-1" tabindex="-1"></a><span class="fu">library</span>(grid)</span>
+<span id="section-cb3-2"><a href="#section-cb3-2" tabindex="-1"></a>custom_title <span class="ot">&lt;-</span> <span class="fu">textGrob</span>(<span class="st">&quot;Model Validity Analysis&quot;</span>, </span>
+<span id="section-cb3-3"><a href="#section-cb3-3" tabindex="-1"></a>                         <span class="at">gp =</span> <span class="fu">gpar</span>(<span class="at">fontface =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">fontsize =</span> <span class="dv">18</span>, <span class="at">col =</span> <span class="st">&quot;#21618C&quot;</span>))</span>
+<span id="section-cb3-4"><a href="#section-cb3-4" tabindex="-1"></a></span>
+<span id="section-cb3-5"><a href="#section-cb3-5" tabindex="-1"></a><span class="co"># 1. Actual vs Predicted</span></span>
+<span id="section-cb3-6"><a href="#section-cb3-6" tabindex="-1"></a>plot1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(test_data, <span class="fu">aes</span>(<span class="at">x =</span> Votes, <span class="at">y =</span> Predicted)) <span class="sc">+</span></span>
+<span id="section-cb3-7"><a href="#section-cb3-7" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="fu">aes</span>(<span class="at">color =</span> <span class="fu">abs</span>(Residuals)), <span class="at">size =</span> <span class="dv">3</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="section-cb3-8"><a href="#section-cb3-8" tabindex="-1"></a>  <span class="fu">geom_abline</span>(<span class="at">slope =</span> <span class="dv">1</span>, <span class="at">intercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;#C0392B&quot;</span>, <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="section-cb3-9"><a href="#section-cb3-9" tabindex="-1"></a>  <span class="fu">scale_color_gradient</span>(<span class="at">low =</span> <span class="st">&quot;#2ECC71&quot;</span>, <span class="at">high =</span> <span class="st">&quot;#E74C3C&quot;</span>, <span class="at">name =</span> <span class="st">&quot;Absolute</span><span class="sc">\n</span><span class="st">Error&quot;</span>, <span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb3-10"><a href="#section-cb3-10" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb3-11"><a href="#section-cb3-11" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb3-12"><a href="#section-cb3-12" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Actual vs Predicted Votes&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Actual Votes&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Predicted Votes&quot;</span>,</span>
+<span id="section-cb3-13"><a href="#section-cb3-13" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="fu">paste0</span>(<span class="st">&quot;Perfect prediction line shown in red&quot;</span>)) <span class="sc">+</span></span>
+<span id="section-cb3-14"><a href="#section-cb3-14" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb3-15"><a href="#section-cb3-15" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb3-16"><a href="#section-cb3-16" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-17"><a href="#section-cb3-17" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">11</span>, <span class="at">color =</span> <span class="st">&quot;#5D6D7E&quot;</span>),</span>
+<span id="section-cb3-18"><a href="#section-cb3-18" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-19"><a href="#section-cb3-19" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="section-cb3-20"><a href="#section-cb3-20" tabindex="-1"></a>  )</span>
+<span id="section-cb3-21"><a href="#section-cb3-21" tabindex="-1"></a></span>
+<span id="section-cb3-22"><a href="#section-cb3-22" tabindex="-1"></a><span class="co"># 2. Residuals vs Predicted</span></span>
+<span id="section-cb3-23"><a href="#section-cb3-23" tabindex="-1"></a>plot2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(test_data, <span class="fu">aes</span>(<span class="at">x =</span> Predicted, <span class="at">y =</span> Residuals)) <span class="sc">+</span></span>
+<span id="section-cb3-24"><a href="#section-cb3-24" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">&quot;#239B56&quot;</span>, <span class="at">size =</span> <span class="fl">2.3</span>, <span class="at">alpha =</span> <span class="fl">0.65</span>) <span class="sc">+</span></span>
+<span id="section-cb3-25"><a href="#section-cb3-25" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;#C0392B&quot;</span>, <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="section-cb3-26"><a href="#section-cb3-26" tabindex="-1"></a>  <span class="fu">geom_smooth</span>(<span class="at">method =</span> <span class="st">&quot;loess&quot;</span>, <span class="at">color =</span> <span class="st">&quot;#1A5276&quot;</span>, <span class="at">se =</span> <span class="cn">FALSE</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="section-cb3-27"><a href="#section-cb3-27" tabindex="-1"></a>  <span class="fu">scale_x_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb3-28"><a href="#section-cb3-28" tabindex="-1"></a>  <span class="fu">scale_y_continuous</span>(<span class="at">labels =</span> comma) <span class="sc">+</span></span>
+<span id="section-cb3-29"><a href="#section-cb3-29" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Residuals vs Predicted&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Predicted Votes&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Residuals&quot;</span>,</span>
+<span id="section-cb3-30"><a href="#section-cb3-30" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">&quot;Check for homoscedasticity (constant variance)&quot;</span>) <span class="sc">+</span></span>
+<span id="section-cb3-31"><a href="#section-cb3-31" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb3-32"><a href="#section-cb3-32" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb3-33"><a href="#section-cb3-33" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-34"><a href="#section-cb3-34" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">11</span>, <span class="at">color =</span> <span class="st">&quot;#5D6D7E&quot;</span>),</span>
+<span id="section-cb3-35"><a href="#section-cb3-35" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-36"><a href="#section-cb3-36" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="section-cb3-37"><a href="#section-cb3-37" tabindex="-1"></a>  )</span>
+<span id="section-cb3-38"><a href="#section-cb3-38" tabindex="-1"></a></span>
+<span id="section-cb3-39"><a href="#section-cb3-39" tabindex="-1"></a><span class="co"># 3. Q-Q Plot</span></span>
+<span id="section-cb3-40"><a href="#section-cb3-40" tabindex="-1"></a>plot3 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(test_data, <span class="fu">aes</span>(<span class="at">sample =</span> Residuals)) <span class="sc">+</span></span>
+<span id="section-cb3-41"><a href="#section-cb3-41" tabindex="-1"></a>  <span class="fu">stat_qq</span>(<span class="at">color =</span> <span class="st">&quot;#884EA0&quot;</span>, <span class="at">size =</span> <span class="dv">2</span>) <span class="sc">+</span></span>
+<span id="section-cb3-42"><a href="#section-cb3-42" tabindex="-1"></a>  <span class="fu">stat_qq_line</span>(<span class="at">color =</span> <span class="st">&quot;#C0392B&quot;</span>, <span class="at">linewidth =</span> <span class="fl">1.2</span>) <span class="sc">+</span></span>
+<span id="section-cb3-43"><a href="#section-cb3-43" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Q-Q Plot (Normality Check)&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Theoretical Quantiles&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Sample Quantiles&quot;</span>,</span>
+<span id="section-cb3-44"><a href="#section-cb3-44" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">&quot;Points should follow the red line for normality&quot;</span>) <span class="sc">+</span></span>
+<span id="section-cb3-45"><a href="#section-cb3-45" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb3-46"><a href="#section-cb3-46" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb3-47"><a href="#section-cb3-47" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-48"><a href="#section-cb3-48" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">11</span>, <span class="at">color =</span> <span class="st">&quot;#5D6D7E&quot;</span>),</span>
+<span id="section-cb3-49"><a href="#section-cb3-49" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-50"><a href="#section-cb3-50" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="section-cb3-51"><a href="#section-cb3-51" tabindex="-1"></a>  )</span>
+<span id="section-cb3-52"><a href="#section-cb3-52" tabindex="-1"></a></span>
+<span id="section-cb3-53"><a href="#section-cb3-53" tabindex="-1"></a><span class="co"># 4. Residual Histogram</span></span>
+<span id="section-cb3-54"><a href="#section-cb3-54" tabindex="-1"></a>plot4 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(test_data, <span class="fu">aes</span>(<span class="at">x =</span> Residuals<span class="sc">/</span><span class="dv">1000</span>)) <span class="sc">+</span></span>
+<span id="section-cb3-55"><a href="#section-cb3-55" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">bins =</span> <span class="dv">25</span>, <span class="at">fill =</span> <span class="st">&quot;#F39C12&quot;</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">alpha =</span> <span class="fl">0.8</span>) <span class="sc">+</span></span>
+<span id="section-cb3-56"><a href="#section-cb3-56" tabindex="-1"></a>  <span class="fu">geom_vline</span>(<span class="at">xintercept =</span> <span class="dv">0</span>, <span class="at">color =</span> <span class="st">&quot;#C0392B&quot;</span>, <span class="at">linetype =</span> <span class="st">&quot;dashed&quot;</span>, <span class="at">linewidth =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="section-cb3-57"><a href="#section-cb3-57" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">&quot;Distribution of Residuals&quot;</span>, <span class="at">x =</span> <span class="st">&quot;Residuals (Thousands)&quot;</span>, <span class="at">y =</span> <span class="st">&quot;Frequency&quot;</span>,</span>
+<span id="section-cb3-58"><a href="#section-cb3-58" tabindex="-1"></a>       <span class="at">subtitle =</span> <span class="st">&quot;Should be approximately normal, centered at zero&quot;</span>) <span class="sc">+</span></span>
+<span id="section-cb3-59"><a href="#section-cb3-59" tabindex="-1"></a>  <span class="fu">theme_minimal</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
+<span id="section-cb3-60"><a href="#section-cb3-60" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="section-cb3-61"><a href="#section-cb3-61" tabindex="-1"></a>    <span class="at">plot.title =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">16</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-62"><a href="#section-cb3-62" tabindex="-1"></a>    <span class="at">plot.subtitle =</span> <span class="fu">element_text</span>(<span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">11</span>, <span class="at">color =</span> <span class="st">&quot;#5D6D7E&quot;</span>),</span>
+<span id="section-cb3-63"><a href="#section-cb3-63" tabindex="-1"></a>    <span class="at">axis.title.x =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>),</span>
+<span id="section-cb3-64"><a href="#section-cb3-64" tabindex="-1"></a>    <span class="at">axis.title.y =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">&quot;bold&quot;</span>, <span class="at">hjust =</span> <span class="fl">0.5</span>, <span class="at">size =</span> <span class="dv">13</span>, <span class="at">color =</span> <span class="st">&quot;black&quot;</span>)</span>
+<span id="section-cb3-65"><a href="#section-cb3-65" tabindex="-1"></a>  )</span>
+<span id="section-cb3-66"><a href="#section-cb3-66" tabindex="-1"></a></span>
+<span id="section-cb3-67"><a href="#section-cb3-67" tabindex="-1"></a><span class="fu">grid.arrange</span>(plot1, plot2, plot3, plot4, <span class="at">ncol =</span> <span class="dv">2</span>, <span class="at">top =</span> custom_title)</span></code></pre></div>
+<p><img src="Last Prediction Model_files/figure-html/diagnostics-1.png" width="1248" style="display: block; margin: auto;" /></p>
+<div
+style="background: #E8F6F3; padding: 18px; border-radius: 9px; margin: 20px; border-left: 5px solid #27AE60;">
+<h4 style="color: #2874A6; margin-top: 0;">
+How to interpret the Model Validity Analysis:
+</h4>
+<ul style="font-size: 15px; line-height: 1.8;">
+<li>
+<b>Actual vs Predicted Votes:</b> Points close to the dashed line
+indicate accurate predictions. Points far from the line mean higher
+prediction errors.
+</li>
+<li>
+<b>Residuals vs Predicted:</b> Points should be randomly scattered
+around zero, with no clear pattern. A funnel shape or trend indicates
+problems with variance or model fit.
+</li>
+<li>
+<b>Q-Q Plot (Normality Check):</b> If points follow the red line,
+residuals are approximately normally distributed. Large deviations
+suggest non-normality.
+</li>
+<li>
+<b>Distribution of Residuals:</b> A bell-shaped, centered-at-zero
+histogram means residuals are well-behaved. Skewed or multi-peaked
+shapes indicate model issues.
+</li>
+</ul>
+</div>
+<hr />
+</div>
+<div id="section-example-predictions-table" class="section level1">
+<h1><span style="color:#2874A6;">6. 📑 Example Predictions
+Table</span></h1>
+<div class="sourceCode" id="section-cb4"><pre
+class="sourceCode r"><code class="sourceCode r"><span id="section-cb4-1"><a href="#section-cb4-1" tabindex="-1"></a>example_ratings <span class="ot">&lt;-</span> <span class="fu">seq</span>(<span class="fl">7.5</span>, <span class="fl">9.5</span>, <span class="at">by =</span> <span class="fl">0.5</span>)</span>
+<span id="section-cb4-2"><a href="#section-cb4-2" tabindex="-1"></a>pred_votes <span class="ot">&lt;-</span> intercept <span class="sc">+</span> slope <span class="sc">*</span> example_ratings</span>
+<span id="section-cb4-3"><a href="#section-cb4-3" tabindex="-1"></a></span>
+<span id="section-cb4-4"><a href="#section-cb4-4" tabindex="-1"></a>prediction_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="section-cb4-5"><a href="#section-cb4-5" tabindex="-1"></a>  <span class="st">&quot;IMDB Rating&quot;</span> <span class="ot">=</span> example_ratings,</span>
+<span id="section-cb4-6"><a href="#section-cb4-6" tabindex="-1"></a>  <span class="st">&quot;Predicted Votes&quot;</span> <span class="ot">=</span> <span class="fu">comma</span>(<span class="fu">round</span>(pred_votes, <span class="dv">0</span>))</span>
+<span id="section-cb4-7"><a href="#section-cb4-7" tabindex="-1"></a>)</span>
+<span id="section-cb4-8"><a href="#section-cb4-8" tabindex="-1"></a></span>
+<span id="section-cb4-9"><a href="#section-cb4-9" tabindex="-1"></a>knitr<span class="sc">::</span><span class="fu">kable</span>(</span>
+<span id="section-cb4-10"><a href="#section-cb4-10" tabindex="-1"></a>  prediction_table,</span>
+<span id="section-cb4-11"><a href="#section-cb4-11" tabindex="-1"></a>  <span class="at">align =</span> <span class="fu">c</span>(<span class="st">&quot;c&quot;</span>, <span class="st">&quot;r&quot;</span>),</span>
+<span id="section-cb4-12"><a href="#section-cb4-12" tabindex="-1"></a>  <span class="at">col.names =</span> <span class="fu">c</span>(<span class="st">&quot;IMDB Rating&quot;</span>, <span class="st">&quot;Predicted Votes&quot;</span>)</span>
+<span id="section-cb4-13"><a href="#section-cb4-13" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="section-cb4-14"><a href="#section-cb4-14" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">kable_styling</span>(</span>
+<span id="section-cb4-15"><a href="#section-cb4-15" tabindex="-1"></a>    <span class="at">bootstrap_options =</span> <span class="fu">c</span>(<span class="st">&quot;striped&quot;</span>, <span class="st">&quot;hover&quot;</span>, <span class="st">&quot;condensed&quot;</span>),</span>
+<span id="section-cb4-16"><a href="#section-cb4-16" tabindex="-1"></a>    <span class="at">full_width =</span> <span class="cn">FALSE</span>,</span>
+<span id="section-cb4-17"><a href="#section-cb4-17" tabindex="-1"></a>    <span class="at">position =</span> <span class="st">&quot;center&quot;</span></span>
+<span id="section-cb4-18"><a href="#section-cb4-18" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="section-cb4-19"><a href="#section-cb4-19" tabindex="-1"></a>  kableExtra<span class="sc">::</span><span class="fu">row_spec</span>(<span class="dv">0</span>, <span class="at">bold =</span> <span class="cn">TRUE</span>, <span class="at">color =</span> <span class="st">&quot;white&quot;</span>, <span class="at">background =</span> <span class="st">&quot;#2874A6&quot;</span>)</span></code></pre></div>
+<table class="table table-striped table-hover table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:center;font-weight: bold;color: white !important;background-color: rgba(40, 116, 166, 255) !important;">
+IMDB Rating
+</th>
+<th style="text-align:right;font-weight: bold;color: white !important;background-color: rgba(40, 116, 166, 255) !important;">
+Predicted Votes
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center;">
+7.5
+</td>
+<td style="text-align:right;">
+21,369
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+8.0
+</td>
+<td style="text-align:right;">
+302,339
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+8.5
+</td>
+<td style="text-align:right;">
+583,309
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+9.0
+</td>
+<td style="text-align:right;">
+864,279
+</td>
+</tr>
+<tr>
+<td style="text-align:center;">
+9.5
+</td>
+<td style="text-align:right;">
+1,145,249
+</td>
+</tr>
+</tbody>
+</table>
+<div
+style="text-align:center; font-size:16px; color:#21618C; font-weight:bold; margin-top:15px; margin-bottom:10px;">
+<p>📊 Predicted Votes for Different IMDB Ratings</p>
+</div>
+<div
+style="background-color:#E8F6F3; padding:15px; border-radius:10px; margin-top:15px; font-size:15px;">
+<p><b>📌 Note:</b> The table shows expected vote counts based on IMDB
+ratings. Higher ratings consistently predict greater audience
+engagement.</p>
+</div>
+<hr />
+</div>
+<div id="section-interactive-imdb-rating-prediction"
+class="section level1">
+<h1><span style="color:#2874A6;">7. 🎚️ Interactive IMDB Rating
+Prediction</span></h1>
+<div
+style="background:#F7F9F9; padding:20px 32px; border-radius:15px; font-size:19px; text-align:center;">
+<p><b>Predict movie popularity instantly: Enter an IMDB rating to
+estimate the expected number of votes.</b></p>
+</div>
+<div class="container-fluid">
+<div class="form-group shiny-input-container" style="width:100%;">
+<label class="control-label" id="rating-label" for="rating">Select IMDB Rating:</label>
+<input class="js-range-slider" id="rating" data-skin="shiny" data-min="7.6" data-max="9.3" data-from="8" data-step="0.1" data-grid="true" data-grid-num="8.50000000000001" data-grid-snap="false" data-prettify-separator="," data-prettify-enabled="true" data-keyboard="true" data-data-type="number"/>
+</div>
+<pre class="shiny-text-output noplaceholder" id="predVotes"></pre>
+</div>
+<div class="sourceCode" id="section-cb5"><pre
+class="sourceCode r"><code class="sourceCode r"><span id="section-cb5-1"><a href="#section-cb5-1" tabindex="-1"></a>output<span class="sc">$</span>predVotes <span class="ot">&lt;-</span> <span class="fu">renderText</span>({</span>
+<span id="section-cb5-2"><a href="#section-cb5-2" tabindex="-1"></a>  pred <span class="ot">&lt;-</span> intercept <span class="sc">+</span> slope <span class="sc">*</span> input<span class="sc">$</span>rating</span>
+<span id="section-cb5-3"><a href="#section-cb5-3" tabindex="-1"></a>  <span class="fu">paste0</span>(<span class="st">&quot;Predicted Votes: &quot;</span>, <span class="fu">comma</span>(<span class="fu">round</span>(pred, <span class="dv">0</span>)))</span>
+<span id="section-cb5-4"><a href="#section-cb5-4" tabindex="-1"></a>})</span></code></pre></div>
+<hr />
+</div>
+<div id="section-key-takeaways" class="section level1">
+<h1><span style="color:#2874A6;">8. 🎯 Key Takeaways</span></h1>
+<div
+style="background-color:#FEF5E7; padding:20px 32px; border-radius:15px; font-size:19px; text-align:center;">
+<ul>
+<li>
+<b style="color:#2874A6;">IMDB ratings are a <u>strong predictor</u> of
+movie popularity.</b>
+</li>
+<li>
+<b style="color:#C0392B;">Higher-rated movies consistently attract more
+votes.</b>
+</li>
+<li>
+<b style="color:#229954;">The linear model provides accurate, actionable
+predictions for audience engagement.</b>
+</li>
+</ul>
+</div>
+<hr />
+<div
+style="background-color:#D6DBDF; padding:12px; border-radius:9px; text-align:center; font-size:16px; margin-top:25px;">
+<p><i>All code is hidden for a clean, insight-focused report. If you
+have any question Just ask!</i></p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("section-TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#section-TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
