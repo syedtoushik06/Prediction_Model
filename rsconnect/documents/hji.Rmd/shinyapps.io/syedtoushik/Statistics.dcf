@@ -1,0 +1,12 @@
+name: Statistics
+title: Statistics
+username: syedtoushik
+account: syedtoushik
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15673921
+bundleId: 10999547
+url: https://syedtoushik.shinyapps.io/Statistics/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

@@ -5,7 +5,7 @@ date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output:
   html_document:
     toc: true
-    toc_float: 
+    toc_float:
       collapsed: false
       smooth_scroll: true
     toc_depth: 3
@@ -30,11 +30,20 @@ knitr::opts_chunk$set(
 options(repos = c(CRAN = "https://cloud.r-project.org/"))
 
 # Load required packages with error handling
-required_packages <- c("ggplot2", "dplyr", "gridExtra", "caret", "Metrics", 
-                       "scales", "grid", "DT", "plotly", "shiny", "moments", "patchwork")
+required_packages <- c(
+  "ggplot2", "dplyr", "gridExtra", "caret", "Metrics", 
+  "scales", "grid", "DT", "plotly", "shiny", "moments", "patchwork", "hexbin", "kableExtra"
+)
 
+# Install missing packages
+new_packages <- required_packages[!(required_packages %in% installed.packages()[,"Package"])]
+if(length(new_packages)) install.packages(new_packages)
+
+# Load all packages quietly
 suppressPackageStartupMessages({
-  lapply(required_packages, library, character.only = TRUE)
+  invisible(lapply(required_packages, function(pkg) {
+    library(pkg, character.only = TRUE, quietly = TRUE)
+  }))
 })
 ```
 
@@ -93,7 +102,6 @@ Predictive Modeling of IMDB Ratings and Movie Popularity
 </div>
 <div><b>Name:</b> Syed Toushik Hossain</div>
 <div><b>Institute:</b> Institute of Health Economics, University of Dhaka</div>
-
 </div>
 
 </div>
@@ -119,7 +127,6 @@ Predictive Modeling of IMDB Ratings and Movie Popularity
 
 # <span style="color:#2874A6;">1. 📋 Interactive Overview of Movie Data</span>
 
-<!-- Table Title -->
 <div style="text-align: center; color: #21618C; font-size: 18px; font-weight: bold; padding: 10px; margin-bottom:3px;">
 IMDB Top 1000 Movies - Complete Dataset
 </div>
@@ -132,10 +139,10 @@ movies$Votes <- as.numeric(movies$Votes)
 
 DT::datatable(
   movies,
-  extensions = c('Buttons'),
+  extensions = 'Buttons',
   options = list(
     pageLength = 10,
-    dom = 'Bfrtip',  # B = buttons, f = filter, r = processing, t = table, i = info, p = pagination
+    dom = 'Bfrtip',
     buttons = list(
       list(extend = 'copy', className = 'btn-sm'),
       list(extend = 'csv', className = 'btn-sm'),
@@ -148,11 +155,6 @@ DT::datatable(
   rownames = FALSE
 )
 ```
-
-<!-- Export/Copy/Excel Buttons Placement (centered, below table) -->
-<div style="display:flex; justify-content:center; align-items:center; margin-top:15px;">
-<div id="datatable-export-buttons"></div>
-</div>
 
 <div style="background-color:#FEF9E7; padding:15px; border-radius:10px; font-size:15px; margin-top:10px;">
 <b>Note:</b> The table allows you to <b>copy</b> data, export it as <b>CSV</b>, <b>Excel</b>, or <b>PDF</b>, and also directly <b>print</b>.
@@ -209,12 +211,6 @@ Popularity Distribution Across IMDB Ratings
 </div>
 
 ```{r combined-visual, fig.width=16, fig.height=6}
-# Ensure hexbin package is installed
-if (!requireNamespace("hexbin", quietly = TRUE)) {
-  install.packages("hexbin")
-}
-library(hexbin)
-
 # Hexbin plot with trendline
 p_hex <- ggplot(movies, aes(x = Rating, y = Votes)) +
   geom_hex(bins = 25) +
@@ -234,7 +230,7 @@ p_hex <- ggplot(movies, aes(x = Rating, y = Votes)) +
     legend.position = "right"
   )
 
-# Boxplot remains as before
+# Boxplot
 movies$RatingGroup <- cut(movies$Rating, 
                           breaks = seq(floor(min(movies$Rating)), ceiling(max(movies$Rating)), by = 0.5),
                           include.lowest = TRUE, right = FALSE, dig.lab = 3)
@@ -296,7 +292,6 @@ Votes = `r round(intercept,2)` + `r round(slope,2)` × Rating
 </div>
 
 ```{r diagnostics, fig.width=13, fig.height=10}
-library(grid)
 custom_title <- textGrob("Model Validity Analysis", 
                          gp = gpar(fontface = "bold", fontsize = 18, col = "#21618C"))
 

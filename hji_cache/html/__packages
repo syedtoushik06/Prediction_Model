@@ -1,0 +1,11 @@
+shiny
+ggplot2
+dplyr
+gridExtra
+lattice
+caret
+Metrics
+scales
+DT
+hexbin
+kableExtra

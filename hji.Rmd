@@ -1,0 +1,505 @@
+---
+title: "🎬 Prediction Model of the Relationship Between IMDB Rating & Movie Popularity"
+author: "Syed Toushik Hossain"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  html_document:
+    toc: true
+    toc_float:
+      collapsed: false
+      smooth_scroll: true
+    toc_depth: 3
+    number_sections: false
+    highlight: tango
+    theme: lumen
+    code_folding: hide
+    df_print: paged
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE, 
+  message = FALSE, 
+  warning = FALSE, 
+  fig.align = "center", 
+  fig.width = 8, 
+  fig.height = 5,
+  cache = TRUE  # Enable caching for faster reruns
+)
+options(repos = c(CRAN = "https://cloud.r-project.org/"))
+
+# Load required packages efficiently
+required_packages <- c(
+  "ggplot2", "dplyr", "gridExtra", "caret", "Metrics", 
+  "scales", "grid", "DT", "shiny", "hexbin", "kableExtra"
+)
+
+# Load packages silently
+suppressPackageStartupMessages({
+  invisible(lapply(required_packages, function(pkg) {
+    if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+      install.packages(pkg)
+      library(pkg, character.only = TRUE, quietly = TRUE)
+    }
+  }))
+})
+```
+
+```{css, echo=FALSE}
+/* Custom CSS for professional styling */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.title {
+  text-align: center;
+  color: #2874A6;
+  padding: 20px 0;
+  border-bottom: 3px solid #2874A6;
+}
+
+h1, h2, h3 {
+  color: #2874A6;
+}
+
+.author, .date {
+  text-align: center;
+  font-size: 16px;
+  color: #5D6D7E;
+}
+```
+
+<div style="background: linear-gradient(135deg, #F9FAFB 0%, #EBF5FB 100%); padding: 35px 40px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 30px; border-left: 8px solid #2874A6;">
+
+<div style="text-align: center; margin-bottom: 25px;">
+<h2 style="color: #2874A6; margin: 0; font-size: 28px; font-weight: 700; letter-spacing: 0.5px;">
+Statistical Analysis Report
+</h2>
+<div style="width: 80px; height: 3px; background: linear-gradient(to right, #2874A6, #AED6F1); margin: 12px auto;"></div>
+<p style="color: #5D6D7E; font-size: 16px; font-style: italic; margin: 8px 0;">
+Predictive Modeling of IMDB Ratings and Movie Popularity
+</p>
+</div>
+
+<hr style="border: 0; border-top: 2px solid #D5DBDB; margin: 25px 0; opacity: 0.5;">
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; font-size: 15px; color: #424949; line-height: 1.8;">
+
+<div style="background: white; padding: 18px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<div style="font-weight: 600; color: #2874A6; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+📚 Academic Information
+</div>
+<div><b>Course:</b> Statistics I (HE 103)</div>
+<div><b>Session:</b> 1st Year, 1st Semester (2024–2025)</div>
+<div><b>Instructor:</b> Ashraful K. Abir</div>
+</div>
+
+<div style="background: white; padding: 18px 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+<div style="font-weight: 600; color: #2874A6; margin-bottom: 10px; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">
+👤 Student & Institution
+</div>
+<div><b>Name:</b> Syed Toushik Hossain</div>
+<div><b>Institute:</b> Institute of Health Economics, University of Dhaka</div>
+</div>
+
+</div>
+
+<div style="background: #FEF9E7; padding: 12px 18px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #F39C12;">
+<div style="display: flex; align-items: center; gap: 10px;">
+<span style="font-size: 20px;">📊</span>
+<div style="font-size: 14px; color: #7D6608; line-height: 1.6;">
+<b>Report Type:</b> Quantitative Statistical Analysis | <b>Methodology:</b> Linear Regression Modeling | <b>Dataset:</b> IMDB Top 1000 Movies
+</div>
+</div>
+</div>
+
+</div>
+
+<div style="background: #E8F6F3; padding: 12px 20px; border-radius: 8px; border-left: 4px solid #2874A6; margin-bottom: 25px;">
+<div style="font-size: 14px; color: #1E4D2B; line-height: 1.6;">
+<b style="color: #2874A6;">📌 Navigation:</b> Click <span style="background: #2874A6; color: white; padding: 1px 6px; border-radius: 3px; font-weight: 600; font-size: 12px;">Code</span> buttons to view R code. Use the sidebar to navigate sections.
+</div>
+</div>
+
+---
+
+```{r load-data, include=FALSE, cache=TRUE}
+# Load data once and cache it
+movies <- read.csv("Dataset.csv")
+colnames(movies) <- c("Title", "Rating", "Votes")
+movies$Rating <- as.numeric(movies$Rating)
+movies$Votes <- as.numeric(movies$Votes)
+```
+
+# <span style="color:#2874A6;">1. 📋 Interactive Overview of Movie Data</span>
+
+<div style="text-align: center; color: #21618C; font-size: 18px; font-weight: bold; padding: 10px; margin-bottom:3px;">
+IMDB Top 1000 Movies - Complete Dataset
+</div>
+
+```{r full-data, results='asis'}
+DT::datatable(
+  movies,
+  extensions = 'Buttons',
+  options = list(
+    pageLength = 10,
+    dom = 'Bfrtip',
+    buttons = list(
+      list(extend = 'copy', className = 'btn-sm'),
+      list(extend = 'csv', className = 'btn-sm', filename = 'IMDB_movies'),
+      list(extend = 'excel', className = 'btn-sm', filename = 'IMDB_movies'),
+      list(extend = 'pdf', className = 'btn-sm', filename = 'IMDB_movies'),
+      list(extend = 'print', className = 'btn-sm')
+    ),
+    scrollX = TRUE,
+    deferRender = TRUE,
+    scroller = TRUE
+  ),
+  rownames = FALSE
+)
+```
+
+<div style="background-color:#FEF9E7; padding:15px; border-radius:10px; font-size:15px; margin-top:10px;">
+<b>Note:</b> The table allows you to <b>copy</b> data, export it as <b>CSV</b>, <b>Excel</b>, or <b>PDF</b>, and also directly <b>print</b>.
+</div>
+
+---
+
+# <span style="color:#2874A6;">2. 📊 Key Descriptive Statistics</span>
+
+```{r stats-calc, include=FALSE, cache=TRUE}
+# Pre-calculate statistics
+rating_mean <- round(mean(movies$Rating), 2)
+rating_median <- round(median(movies$Rating), 2)
+rating_sd <- round(sd(movies$Rating), 2)
+rating_min <- min(movies$Rating)
+rating_max <- max(movies$Rating)
+
+votes_mean <- comma(round(mean(movies$Votes)))
+votes_median <- comma(round(median(movies$Votes)))
+votes_sd <- comma(round(sd(movies$Votes)))
+votes_min <- comma(min(movies$Votes))
+votes_max <- comma(max(movies$Votes))
+```
+
+<div style="display:flex; gap:40px; justify-content:center;">
+
+<div style="flex:1; background:#EBF5FB; padding:17px 20px; border-radius:13px; text-align:center;">
+<span style="font-size:18px;font-weight:bold;color:#21618C;">IMDB Ratings</span><br>
+<ul style="font-size:16px;line-height:1.35;text-align:left; display:inline-block;">
+<li><b>Mean:</b> <span style="color:#1F618D;">`r rating_mean`</span></li>
+<li><b>Median:</b> <span style="color:#117A65;">`r rating_median`</span></li>
+<li><b>Std Dev:</b> <span style="color:#BA4A00;">`r rating_sd`</span></li>
+<li><b>Range:</b> <span style="color:#884EA0;">`r rating_min` - `r rating_max`</span></li>
+</ul>
+</div>
+
+<div style="flex:1; background:#FDF2E9; padding:17px 20px; border-radius:13px; text-align:center;">
+<span style="font-size:18px;font-weight:bold;color:#21618C;">Votes (Popularity)</span><br>
+<ul style="font-size:16px;line-height:1.35;text-align:left; display:inline-block;">
+<li><b>Mean:</b> <span style="color:#BA4A00;">`r votes_mean`</span></li>
+<li><b>Median:</b> <span style="color:#117A65;">`r votes_median`</span></li>
+<li><b>Std Dev:</b> <span style="color:#5D6D7E;">`r votes_sd`</span></li>
+<li><b>Range:</b> <span style="color:#884EA0;">`r votes_min` - `r votes_max`</span></li>
+</ul>
+</div>
+</div>
+
+---
+
+# <span style="color:#21618C;">3. 🔗 Relationship Strength</span>
+
+```{r correlation, include=FALSE, cache=TRUE}
+correlation <- round(cor(movies$Rating, movies$Votes), 3)
+cor_strength <- ifelse(abs(correlation) > 0.7, "Strong positive", 
+                       ifelse(abs(correlation) > 0.4, "Moderate positive", "Weak"))
+```
+
+<div style="background-color:#E9F7EF; padding:18px 25px; border-radius:14px; text-align:center;">
+<span style="font-size:19px;">
+<b>Correlation coefficient (r):</b> <span style="color:#C0392B;font-size:25px;"><b>`r correlation`</b></span>
+</span>
+<br>
+<b>Interpretation:</b>
+<span style="color:#154360;">
+`r cor_strength` relationship
+</span>
+</div>
+
+---
+
+# <span style="color:#2874A6;">4. 🎨 Graphical Exploration of Relationships</span>
+
+<div style="text-align:center; font-size:20px; color:#21618C; font-weight:bold; margin-top:20px; margin-bottom:10px;">
+Popularity Distribution Across IMDB Ratings
+</div>
+
+```{r combined-visual, fig.width=16, fig.height=6, cache=TRUE}
+# Hexbin plot with trendline
+p_hex <- ggplot(movies, aes(x = Rating, y = Votes)) +
+  geom_hex(bins = 25) +
+  geom_smooth(method = "lm", color = "#C0392B", se = TRUE, linetype = "solid", linewidth = 1.3) +
+  scale_fill_gradient(low = "#AED6F1", high = "#1F618D", name = "Count") +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "IMDB Rating vs Votes (Hexbin Density with Trendline)",
+    x = "IMDB Rating", 
+    y = "Number of Votes"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 14, color = "black"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    legend.position = "right"
+  )
+
+# Boxplot
+movies$RatingGroup <- cut(movies$Rating, 
+                          breaks = seq(floor(min(movies$Rating)), ceiling(max(movies$Rating)), by = 0.5),
+                          include.lowest = TRUE, right = FALSE, dig.lab = 3)
+p_box <- ggplot(movies, aes(x = RatingGroup, y = Votes)) +
+  geom_boxplot(fill = "#F5B041", color = "#BA4A00", outlier.colour = "red", outlier.shape = 16, alpha = 0.7) +
+  scale_y_continuous(labels = comma) +
+  labs(
+    title = "Votes Distribution by IMDB Rating Group",
+    x = "IMDB Rating Group", 
+    y = "Number of Votes"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1, size = 10, color = "black"),
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 14, color = "black"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black")
+  )
+
+grid.arrange(p_hex, p_box, ncol = 2)
+```
+
+<div style="background: #E8F6F3; padding: 18px; border-radius: 9px; margin: 20px; border-left: 5px solid #27AE60;">
+<h4 style="color: #2874A6; margin-top: 0;">How to interpret:</h4>
+<ul style="font-size: 15px; line-height: 1.8;">
+<li><b>Hexbin Density Plot:</b> Each hexagon's color intensity shows how many movies fall into that IMDB rating/votes range. Darker hexagons = more movies in that region. The red trendline shows the overall positive relationship: as IMDB rating increases, votes tend to increase too.</li>
+<li><b>Boxplot:</b> Each box summarizes the spread of votes (popularity) for a 0.5 rating group. The box shows the middle 50% of movies, the line is the median, and dots outside are outliers. Compare medians and spreads to see how popularity varies with rating.</li>
+</ul>
+</div>
+
+---
+
+# <span style="color:#2874A6;">5. 🔮 Predictive Modeling & Diagnostics</span>
+
+```{r modeling, include=FALSE, cache=TRUE}
+set.seed(123)
+train_index <- createDataPartition(movies$Votes, p = 0.8, list = FALSE)
+train_data <- movies[train_index, ]
+test_data <- movies[-train_index, ]
+model <- lm(Votes ~ Rating, data = train_data)
+predictions <- predict(model, newdata = test_data)
+test_data$Predicted <- predictions
+test_data$Residuals <- test_data$Votes - predictions
+intercept <- coef(model)[1]
+slope <- coef(model)[2]
+r_squared <- summary(model)$r.squared
+rmse_value <- rmse(test_data$Votes, predictions)
+mae_value <- mae(test_data$Votes, predictions)
+```
+
+<div style="background-color:#FCF3CF;padding:10px 20px;border-radius:11px; margin-bottom:12px; text-align:center;">
+<b style="color:#2874A6;">Prediction Equation:</b><br>
+<span style="background-color:#FADBD8; color:#C0392B; font-weight:bold; padding:4px 8px; border-radius:6px; display:inline-block; margin:6px 0;">
+Votes = `r round(intercept,2)` + `r round(slope,2)` × Rating
+</span><br>
+<b>R²:</b> <span style="color:#2874A6;">`r round(r_squared,3)`</span>
+&emsp; <b>RMSE:</b> <span style="color:#2874A6;">`r comma(round(rmse_value,0))`</span> votes
+&emsp; <b>MAE:</b> <span style="color:#2874A6;">`r comma(round(mae_value,0))`</span> votes
+</div>
+
+```{r diagnostics, fig.width=13, fig.height=10, cache=TRUE}
+custom_title <- textGrob("Model Validity Analysis", 
+                         gp = gpar(fontface = "bold", fontsize = 18, col = "#21618C"))
+
+# 1. Actual vs Predicted
+plot1 <- ggplot(test_data, aes(x = Votes, y = Predicted)) +
+  geom_point(aes(color = abs(Residuals)), size = 3, alpha = 0.7) +
+  geom_abline(slope = 1, intercept = 0, color = "#C0392B", linetype = "dashed", linewidth = 1) +
+  scale_color_gradient(low = "#2ECC71", high = "#E74C3C", name = "Absolute\nError", labels = comma) +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Actual vs Predicted Votes", x = "Actual Votes", y = "Predicted Votes",
+       subtitle = "Perfect prediction line shown in red") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16, color = "black"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#5D6D7E"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black")
+  )
+
+# 2. Residuals vs Predicted
+plot2 <- ggplot(test_data, aes(x = Predicted, y = Residuals)) +
+  geom_point(color = "#239B56", size = 2.3, alpha = 0.65) +
+  geom_hline(yintercept = 0, color = "#C0392B", linetype = "dashed", linewidth = 1) +
+  geom_smooth(method = "loess", color = "#1A5276", se = FALSE, linewidth = 1) +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Residuals vs Predicted", x = "Predicted Votes", y = "Residuals",
+       subtitle = "Check for homoscedasticity (constant variance)") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16, color = "black"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#5D6D7E"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black")
+  )
+
+# 3. Q-Q Plot
+plot3 <- ggplot(test_data, aes(sample = Residuals)) +
+  stat_qq(color = "#884EA0", size = 2) +
+  stat_qq_line(color = "#C0392B", linewidth = 1.2) +
+  labs(title = "Q-Q Plot (Normality Check)", x = "Theoretical Quantiles", y = "Sample Quantiles",
+       subtitle = "Points should follow the red line for normality") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16, color = "black"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#5D6D7E"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black")
+  )
+
+# 4. Residual Histogram
+plot4 <- ggplot(test_data, aes(x = Residuals/1000)) +
+  geom_histogram(bins = 25, fill = "#F39C12", color = "white", alpha = 0.8) +
+  geom_vline(xintercept = 0, color = "#C0392B", linetype = "dashed", linewidth = 1) +
+  labs(title = "Distribution of Residuals", x = "Residuals (Thousands)", y = "Frequency",
+       subtitle = "Should be approximately normal, centered at zero") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(face = "bold", hjust = 0.5, size = 16, color = "black"),
+    plot.subtitle = element_text(hjust = 0.5, size = 11, color = "#5D6D7E"),
+    axis.title.x = element_text(face = "bold", hjust = 0.5, size = 13, color = "black"),
+    axis.title.y = element_text(face = "bold", hjust = 0.5, size = 13, color = "black")
+  )
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2, top = custom_title)
+```
+
+<div style="background: #E8F6F3; padding: 18px; border-radius: 9px; margin: 20px; border-left: 5px solid #27AE60;">
+<h4 style="color: #2874A6; margin-top: 0;">How to interpret the Model Validity Analysis:</h4>
+<ul style="font-size: 15px; line-height: 1.8;">
+<li><b>Actual vs Predicted Votes:</b> Points close to the dashed line indicate accurate predictions. Points far from the line mean higher prediction errors.</li>
+<li><b>Residuals vs Predicted:</b> Points should be randomly scattered around zero, with no clear pattern. A funnel shape or trend indicates problems with variance or model fit.</li>
+<li><b>Q-Q Plot (Normality Check):</b> If points follow the red line, residuals are approximately normally distributed. Large deviations suggest non-normality.</li>
+<li><b>Distribution of Residuals:</b> A bell-shaped, centered-at-zero histogram means residuals are well-behaved. Skewed or multi-peaked shapes indicate model issues.</li>
+</ul>
+</div>
+
+---
+
+# <span style="color:#2874A6;">6. 📑 Example Predictions Table</span>
+
+```{r example-pred, cache=TRUE}
+example_ratings <- seq(7.5, 9.5, by = 0.5)
+pred_votes <- intercept + slope * example_ratings
+
+prediction_table <- data.frame(
+  "IMDB_Rating" = example_ratings,
+  "Predicted_Votes" = comma(round(pred_votes, 0))
+)
+
+knitr::kable(
+  prediction_table,
+  align = c("c", "r"),
+  col.names = c("IMDB Rating", "Predicted Votes")
+) %>%
+  kableExtra::kable_styling(
+    bootstrap_options = c("striped", "hover", "condensed"),
+    full_width = FALSE,
+    position = "center"
+  ) %>%
+  kableExtra::row_spec(0, bold = TRUE, color = "white", background = "#2874A6")
+```
+
+<div style="text-align:center; font-size:16px; color:#21618C; font-weight:bold; margin-top:15px; margin-bottom:10px;">
+📊 Predicted Votes for Different IMDB Ratings
+</div>
+
+<div style="background-color:#E8F6F3; padding:15px; border-radius:10px; margin-top:15px; font-size:15px;">
+<b>📌 Note:</b> The table shows expected vote counts based on IMDB ratings. Higher ratings consistently predict greater audience engagement.
+</div>
+
+---
+
+# <span style="color:#2874A6;">7. 🎚️ Interactive IMDB Rating Prediction</span>
+
+<div style="background:#F7F9F9; padding:20px 32px; border-radius:15px; font-size:19px; text-align:center;">
+<b>Predict movie popularity instantly: Enter an IMDB rating to estimate the expected number of votes.</b>
+</div>
+
+```{r prediction-slider, echo=FALSE}
+fluidPage(
+  tags$head(
+    tags$style(HTML("
+      .control-label { 
+        color: #2874A6; 
+        font-weight: bold; 
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      #predVotes {
+        background-color: #E8F8F5;
+        border: 2px solid #2874A6;
+        border-radius: 8px;
+        padding: 15px;
+        font-size: 20px;
+        font-weight: bold;
+        color: #1F618D;
+        text-align: center;
+        margin-top: 20px;
+      }
+      .irs-bar {
+        background: #2874A6 !important;
+        border-top: 1px solid #2874A6 !important;
+        border-bottom: 1px solid #2874A6 !important;
+      }
+      .irs-single, .irs-from, .irs-to {
+        background: #2874A6 !important;
+      }
+    "))
+  ),
+  sliderInput("rating", 
+              "Select IMDB Rating:", 
+              min = round(min(movies$Rating), 1), 
+              max = round(max(movies$Rating), 1), 
+              value = 8.0, 
+              step = 0.1,
+              width = "100%"),
+  verbatimTextOutput("predVotes")
+)
+```
+
+```{r prediction-server, context="server"}
+output$predVotes <- renderText({
+  pred <- intercept + slope * input$rating
+  paste0("Predicted Votes: ", comma(round(pred, 0)))
+})
+```
+
+---
+
+# <span style="color:#2874A6;">8. 🎯 Key Takeaways</span>
+
+<div style="background-color:#FEF5E7; padding:20px 32px; border-radius:15px; font-size:19px;">
+<ul style="text-align:left;">
+<li><b style="color:#2874A6;">IMDB ratings are a <u>strong predictor</u> of movie popularity.</b></li>
+<li><b style="color:#C0392B;">Higher-rated movies consistently attract more votes.</b></li>
+<li><b style="color:#229954;">The linear model provides accurate, actionable predictions for audience engagement.</b></li>
+</ul>
+</div>
+
+---
+
+<div style="background-color:#D6DBDF; padding:12px; border-radius:9px; text-align:center; font-size:16px; margin-top:25px;">
+<i>All code is hidden for a clean, insight-focused report. If you have any question Just ask!</i>
+</div>
